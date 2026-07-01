@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+state/
+# Machine-specific config (paths, denylist). Each machine keeps its own.
+# Copy config.example.json -> config.json to override the portable defaults.
+config.json
+.pytest_cache/

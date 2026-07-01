@@ -6,7 +6,7 @@ One genius model writes the plan. A fleet of cheaper models does the work. **You
 
 Powered by the **`/drive-cmux`** skill for [Claude Code](https://www.anthropic.com/claude-code), driving the local [**cmux**](https://cmux.dev) app. macOS.
 
-> 🚧 **Fresh out of the video.** The skill files land in this repo right after the launch video goes up — **⭐ Star / Watch** to get them the moment they drop. This README is the welcome mat; the engine is on its way.
+> 🎉 **The skill is here.** `skills/drive-cmux/` is the full conductor — see **[docs/install.md](docs/install.md)** to set it up in ~10 minutes. ⭐ Star it if it saves you a few Fable credits.
 
 ---
 
@@ -94,8 +94,9 @@ agent-orchestra/
 │   ├── the-fable-workflow.md  # the money playbook (architect + fleet)
 │   └── safety.md          # what it can/can't touch — and what NOT to orchestrate
 ├── skills/
-│   └── drive-cmux/         # 🚧 the skill itself — lands here after the video
-└── examples/               # 🚧 the demo build (Neon Maestro) — coming
+│   └── drive-cmux/         # ✅ the skill (dcx.py, SKILL.md, docs, tests)
+└── examples/
+    └── neon-maestro/       # ✅ the playable demo the fleet built — open index.html
 ```
 
 ---

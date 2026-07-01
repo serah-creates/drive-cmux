@@ -1,0 +1,956 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>NEON MAESTRO</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #06060f; overflow: hidden; }
+  body { display: flex; align-items: center; justify-content: center; }
+  #stage { display: block; touch-action: none; background: #06060f; }
+</style>
+</head>
+<body>
+<canvas id="stage"></canvas>
+
+<!-- The three fleet-built modules. Each attaches to window.NM. -->
+<script>
+// core.js — NM.Core: game logic (Agent A, GPT-5.5).
+// The shell (game.html) and the other modules depend on this exact API.
+// Keep everything delta-time driven.
+(function () {
+  window.NM = window.NM || {};
+
+  var HIGH_KEY = 'neon-maestro-high';
+  var BASE_SCROLL = 190;
+  var BASE_GRAVITY = 1500;
+  var BASE_THRUST = 430;
+  var BAR_W = 54;
+  var FIRST_SPAWN_DELAY = 0.75;
+  var MAX_DT = 0.05;
+
+  function clamp(v, lo, hi) {
+    return Math.max(lo, Math.min(hi, v));
+  }
+
+  function orbX(state) {
+    return Math.round(state.w * 0.28);
+  }
+
+  function orbRadius(state) {
+    return clamp(Math.min(state.w, state.h) * 0.022, 11, 17);
+  }
+
+  function difficultyLevel(score) {
+    return Math.floor(score / 5);
+  }
+
+  function scrollFor(score) {
+    return BASE_SCROLL * Math.pow(1.06, difficultyLevel(score));
+  }
+
+  function baseGap(state) {
+    return clamp(state.h * 0.34, 150, 230);
+  }
+
+  function gapFloor(state) {
+    return clamp(state.h * 0.18, 92, 132);
+  }
+
+  function gapFor(state) {
+    var g = baseGap(state) * Math.pow(0.96, difficultyLevel(state.score));
+    return Math.max(gapFloor(state), g);
+  }
+
+  function spawnSpacing(state) {
+    return clamp(state.w * 0.42, 230, 380);
+  }
+
+  function spawnInterval(state) {
+    return spawnSpacing(state) / Math.max(1, state.scrollSpeed);
+  }
+
+  function randomGapY(state, gapH) {
+    var pad = Math.max(36, state.orb.r * 2.6);
+    var minY = pad;
+    var maxY = Math.max(minY, state.h - pad - gapH);
+    return minY + Math.random() * (maxY - minY);
+  }
+
+  function spawnBar(state, x) {
+    var gapH = gapFor(state);
+    state.bars.push({
+      x: x,
+      gapY: randomGapY(state, gapH),
+      gapH: gapH,
+      passed: false
+    });
+  }
+
+  function resetRun(state) {
+    state.t = 0;
+    state.score = 0;
+    state.bars = [];
+    state.spawnTimer = FIRST_SPAWN_DELAY;
+    state.scrollSpeed = BASE_SCROLL;
+    state.screenShake = 0;
+    state.orb.r = orbRadius(state);
+    state.orb.y = state.h * 0.5;
+    state.orb.vy = 0;
+  }
+
+  function segmentHitsExpandedRect(px0, py0, px1, py1, left, top, right, bottom) {
+    var dx = px1 - px0;
+    var dy = py1 - py0;
+    var t0 = 0;
+    var t1 = 1;
+
+    if (dx === 0) {
+      if (px0 < left || px0 > right) return false;
+    } else {
+      var invX = 1 / dx;
+      var txA = (left - px0) * invX;
+      var txB = (right - px0) * invX;
+      if (txA > txB) {
+        var tmpX = txA;
+        txA = txB;
+        txB = tmpX;
+      }
+      t0 = Math.max(t0, txA);
+      t1 = Math.min(t1, txB);
+      if (t0 > t1) return false;
+    }
+
+    if (dy === 0) {
+      if (py0 < top || py0 > bottom) return false;
+    } else {
+      var invY = 1 / dy;
+      var tyA = (top - py0) * invY;
+      var tyB = (bottom - py0) * invY;
+      if (tyA > tyB) {
+        var tmpY = tyA;
+        tyA = tyB;
+        tyB = tmpY;
+      }
+      t0 = Math.max(t0, tyA);
+      t1 = Math.min(t1, tyB);
+      if (t0 > t1) return false;
+    }
+
+    return t1 >= 0 && t0 <= 1;
+  }
+
+  function sweptBarHit(state, bar, oldX, oldY, newY, dt) {
+    var r = state.orb.r;
+    var x0 = orbX(state);
+    var x1 = x0 + state.scrollSpeed * dt;
+    var left = oldX - r;
+    var right = oldX + BAR_W + r;
+    var topHit = segmentHitsExpandedRect(
+      x0, oldY, x1, newY,
+      left, -r, right, bar.gapY + r
+    );
+    if (topHit) return true;
+
+    return segmentHitsExpandedRect(
+      x0, oldY, x1, newY,
+      left, bar.gapY + bar.gapH - r, right, state.h + r
+    );
+  }
+
+  function hitBounds(state, oldY, newY) {
+    var r = state.orb.r;
+    if (oldY - r >= 0 && newY - r < 0) return true;
+    if (oldY + r <= state.h && newY + r > state.h) return true;
+    return newY - r < 0 || newY + r > state.h;
+  }
+
+  function crash(state) {
+    state.mode = 'over';
+    state.screenShake = Math.max(state.screenShake || 0, 18);
+    window.NM.Core._saveHigh(state);
+  }
+
+  window.NM.Core = {
+    // createState(w,h) -> fresh state (mode 'start', high loaded from localStorage)
+    createState: function (w, h) {
+      var high = 0;
+      try { high = parseInt(localStorage.getItem(HIGH_KEY) || '0', 10) || 0; } catch (e) {}
+      var r = orbRadius({ w: w, h: h });
+      return {
+        w: w, h: h, mode: 'start', t: 0,
+        orb: { y: h * 0.5, vy: 0, r: r },
+        gravity: BASE_GRAVITY, thrust: BASE_THRUST,
+        scrollSpeed: BASE_SCROLL,
+        bars: [], spawnTimer: 0,
+        score: 0, high: high,
+        screenShake: 0
+      };
+    },
+    // resize(state,w,h) -> update dimensions
+    resize: function (state, w, h) {
+      var oldW = state.w || w;
+      var oldH = state.h || h;
+      var sx = w / oldW;
+      var sy = h / oldH;
+      state.w = w;
+      state.h = h;
+      state.orb.y = clamp(state.orb.y * sy, state.orb.r, h - state.orb.r);
+      state.orb.r = orbRadius(state);
+      for (var i = 0; i < state.bars.length; i++) {
+        state.bars[i].x *= sx;
+        state.bars[i].gapY = clamp(state.bars[i].gapY * sy, 0, h - state.bars[i].gapH * sy);
+        state.bars[i].gapH = clamp(state.bars[i].gapH * sy, gapFloor(state), baseGap(state));
+      }
+    },
+    // input(state) -> the single action (see SPEC.md). Returns {started:true} when a run begins.
+    input: function (state) {
+      if (state.mode === 'start' || state.mode === 'over') {
+        this._reset(state); state.mode = 'play'; state.orb.vy = -state.thrust;
+        return { started: true };
+      }
+      if (state.mode === 'play') { state.orb.vy = -state.thrust; }
+      return {};
+    },
+    // update(state,dt) -> advance one step; return {scored,crashed,nearMiss}
+    update: function (state, dt) {
+      var events = { scored: false, crashed: false, nearMiss: false };
+      if (state.mode !== 'play') return events;
+
+      dt = clamp(dt || 0, 0, MAX_DT);
+      state.t += dt;
+
+      var oldY = state.orb.y;
+      state.orb.vy += state.gravity * dt;
+      var newY = oldY + state.orb.vy * dt;
+
+      state.spawnTimer -= dt;
+      while (state.spawnTimer <= 0) {
+        spawnBar(state, state.w + BAR_W);
+        state.spawnTimer += spawnInterval(state);
+      }
+
+      var oldXs = [];
+      for (var i = 0; i < state.bars.length; i++) {
+        oldXs[i] = state.bars[i].x;
+        state.bars[i].x -= state.scrollSpeed * dt;
+      }
+
+      if (hitBounds(state, oldY, newY)) {
+        state.orb.y = clamp(newY, state.orb.r, state.h - state.orb.r);
+        state.orb.vy = 0;
+        crash(state);
+        events.crashed = true;
+        return events;
+      }
+
+      for (var j = 0; j < state.bars.length; j++) {
+        if (sweptBarHit(state, state.bars[j], oldXs[j], oldY, newY, dt)) {
+          state.orb.y = newY;
+          crash(state);
+          events.crashed = true;
+          return events;
+        }
+      }
+
+      state.orb.y = newY;
+
+      var passX = orbX(state);
+      for (var k = 0; k < state.bars.length; k++) {
+        var bar = state.bars[k];
+        if (!bar.passed && bar.x + BAR_W < passX) {
+          bar.passed = true;
+          state.score += 1;
+          events.scored = true;
+
+          var margin = Math.min(
+            state.orb.y - (bar.gapY + state.orb.r),
+            (bar.gapY + bar.gapH - state.orb.r) - state.orb.y
+          );
+          if (margin >= 0 && margin <= Math.max(10, state.orb.r * 0.9)) {
+            events.nearMiss = true;
+          }
+
+          state.scrollSpeed = scrollFor(state.score);
+        }
+      }
+
+      var keepFrom = -BAR_W - state.orb.r - 4;
+      for (var n = state.bars.length - 1; n >= 0; n--) {
+        if (state.bars[n].x < keepFrom) state.bars.splice(n, 1);
+      }
+
+      return events;
+    },
+    _reset: function (state) {
+      resetRun(state);
+    },
+    _saveHigh: function (state) {
+      if (state.score > state.high) {
+        state.high = state.score;
+        try { localStorage.setItem(HIGH_KEY, String(state.high)); } catch (e) {}
+      }
+    }
+  };
+})();
+</script>
+<script>
+// render.js — NM.Render: drawing + juice (Agent B, GPT-5.5).
+// Pure canvas rendering for Neon Maestro. Game state comes from NM.Core; this
+// module owns only transient visual effects such as particles, flashes, and parallax.
+(function () {
+  window.NM = window.NM || {};
+
+  var TWO_PI = Math.PI * 2;
+  var BAR_W = 54; // reconciled with core collision width (architect integration)
+  var MAX_TRAIL = 96;
+  var MAX_BURST = 90;
+
+  var viewW = 0;
+  var viewH = 0;
+  var layers = [];
+  var trail = [];
+  var burst = [];
+  var flash = 0;
+  var flashColor = '255,255,255';
+  var time = 0;
+  var lastVy = 0;
+  var initialized = false;
+
+  function clamp(v, min, max) {
+    return Math.max(min, Math.min(max, v));
+  }
+
+  function rand(seed) {
+    var x = Math.sin(seed * 127.1) * 43758.5453123;
+    return x - Math.floor(x);
+  }
+
+  function resizeScratch(state) {
+    viewW = Math.max(1, state.w || 1);
+    viewH = Math.max(1, state.h || 1);
+    layers = [
+      makeLayer(46, 0.13, 1.0, '#31337b', 19),
+      makeLayer(34, 0.32, 1.7, '#15f4ee', 73),
+      makeLayer(22, 0.58, 2.5, '#ff3df2', 151)
+    ];
+  }
+
+  function makeLayer(count, depth, size, color, seed) {
+    var dots = [];
+    for (var i = 0; i < count; i++) {
+      dots.push({
+        x: rand(seed + i * 3) * viewW,
+        y: rand(seed + i * 7) * viewH * 0.68,
+        r: size * (0.65 + rand(seed + i * 11) * 1.2),
+        a: 0.35 + rand(seed + i * 13) * 0.5
+      });
+    }
+    return { depth: depth, color: color, dots: dots };
+  }
+
+  function resetParticles() {
+    trail = [];
+    burst = [];
+  }
+
+  function setFlash(strength, color) {
+    if (strength > flash) {
+      flash = strength;
+      flashColor = color;
+    }
+  }
+
+  function spawnTrail(state, dt) {
+    var orb = state.orb || { y: viewH * 0.5, vy: 0, r: 14 };
+    var thrusting = orb.vy < -40 || lastVy - orb.vy > 120;
+    var speed = Math.abs(orb.vy || 0);
+    var count = thrusting ? 5 : (speed > 180 ? 2 : 1);
+    var x = viewW * 0.28;
+    var direction = orb.vy < 0 ? 1 : -0.25;
+
+    for (var i = 0; i < count; i++) {
+      if (trail.length >= MAX_TRAIL) trail.shift();
+      trail.push({
+        x: x - orb.r * 0.85 + (Math.random() - 0.5) * orb.r * 0.7,
+        y: orb.y + orb.r * 0.25 * direction + (Math.random() - 0.5) * orb.r * 1.2,
+        vx: -70 - Math.random() * 105 - (state.scrollSpeed || 0) * 0.08,
+        vy: 35 + Math.random() * 95 + Math.max(0, -orb.vy) * 0.08,
+        life: 0.34 + Math.random() * 0.2 + (thrusting ? 0.12 : 0),
+        max: 0.46 + (thrusting ? 0.16 : 0),
+        r: 2.2 + Math.random() * (thrusting ? 4.4 : 2.2),
+        hue: thrusting ? (180 + Math.random() * 45) : (290 + Math.random() * 45)
+      });
+    }
+    lastVy = orb.vy || 0;
+  }
+
+  function spawnCrashBurst(state) {
+    var orb = state.orb || { y: viewH * 0.5, r: 14 };
+    var x = viewW * 0.28;
+    for (var i = 0; i < MAX_BURST; i++) {
+      var a = Math.random() * TWO_PI;
+      var sp = 130 + Math.random() * 520;
+      burst.push({
+        x: x,
+        y: orb.y,
+        vx: Math.cos(a) * sp - (state.scrollSpeed || 0) * 0.16,
+        vy: Math.sin(a) * sp,
+        life: 0.55 + Math.random() * 0.45,
+        max: 0.9,
+        r: 2 + Math.random() * 5.5,
+        hue: Math.random() < 0.5 ? 325 : 185
+      });
+    }
+  }
+
+  function updateParticles(dt) {
+    var i;
+    for (i = trail.length - 1; i >= 0; i--) {
+      trail[i].life -= dt;
+      trail[i].x += trail[i].vx * dt;
+      trail[i].y += trail[i].vy * dt;
+      trail[i].vy += 190 * dt;
+      if (trail[i].life <= 0) trail.splice(i, 1);
+    }
+
+    for (i = burst.length - 1; i >= 0; i--) {
+      burst[i].life -= dt;
+      burst[i].x += burst[i].vx * dt;
+      burst[i].y += burst[i].vy * dt;
+      burst[i].vx *= Math.pow(0.045, dt);
+      burst[i].vy += 360 * dt;
+      if (burst[i].life <= 0) burst.splice(i, 1);
+    }
+  }
+
+  function drawBackground(ctx, state) {
+    var w = viewW;
+    var h = viewH;
+    var horizon = h * 0.62;
+    var grad = ctx.createLinearGradient(0, 0, 0, h);
+    grad.addColorStop(0, '#050510');
+    grad.addColorStop(0.48, '#0b1024');
+    grad.addColorStop(1, '#12071c');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, w, h);
+
+    ctx.save();
+    ctx.globalCompositeOperation = 'lighter';
+    for (var l = 0; l < layers.length; l++) {
+      var layer = layers[l];
+      ctx.fillStyle = layer.color;
+      ctx.shadowColor = layer.color;
+      ctx.shadowBlur = 8 + layer.depth * 14;
+      for (var i = 0; i < layer.dots.length; i++) {
+        var dot = layer.dots[i];
+        var x = (dot.x - (state.t || time) * (state.scrollSpeed || 90) * layer.depth * 0.12) % w;
+        if (x < 0) x += w;
+        var pulse = 0.75 + Math.sin(time * 2.1 + i) * 0.25;
+        ctx.globalAlpha = dot.a * pulse * (0.45 + layer.depth * 0.35);
+        ctx.beginPath();
+        ctx.arc(x, dot.y, dot.r, 0, TWO_PI);
+        ctx.fill();
+      }
+    }
+    ctx.restore();
+
+    drawGrid(ctx, state, horizon);
+    drawSun(ctx, horizon);
+  }
+
+  function drawSun(ctx, horizon) {
+    var r = Math.min(viewW, viewH) * 0.16;
+    var x = viewW * 0.78;
+    var y = horizon - r * 0.7;
+    var g = ctx.createRadialGradient(x, y, r * 0.08, x, y, r);
+    g.addColorStop(0, 'rgba(255,236,120,0.42)');
+    g.addColorStop(0.45, 'rgba(255,64,206,0.28)');
+    g.addColorStop(1, 'rgba(255,64,206,0)');
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, TWO_PI);
+    ctx.fill();
+
+    ctx.save();
+    ctx.globalAlpha = 0.18;
+    ctx.strokeStyle = '#ff3df2';
+    ctx.lineWidth = 2;
+    for (var i = 0; i < 8; i++) {
+      var yy = y - r * 0.55 + i * r * 0.18;
+      ctx.beginPath();
+      ctx.moveTo(x - r * 0.78, yy);
+      ctx.lineTo(x + r * 0.78, yy);
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  function drawGrid(ctx, state, horizon) {
+    var w = viewW;
+    var h = viewH;
+    var scroll = ((state.t || time) * (state.scrollSpeed || 120) * 0.42) % 48;
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(0, horizon, w, h - horizon);
+    ctx.clip();
+    ctx.globalAlpha = 0.48;
+    ctx.strokeStyle = '#7f35ff';
+    ctx.lineWidth = 1;
+    ctx.shadowColor = '#7f35ff';
+    ctx.shadowBlur = 10;
+
+    for (var y = horizon + 18 + scroll; y < h + 80; y += 48) {
+      var k = (y - horizon) / (h - horizon);
+      ctx.globalAlpha = 0.14 + k * 0.42;
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(w, y);
+      ctx.stroke();
+    }
+
+    ctx.globalAlpha = 0.32;
+    for (var i = -8; i <= 8; i++) {
+      var bx = w * 0.5 + i * 70;
+      ctx.beginPath();
+      ctx.moveTo(w * 0.5, horizon);
+      ctx.lineTo(bx + i * w * 0.38, h);
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  function drawBars(ctx, state) {
+    var bars = state.bars || [];
+    for (var i = 0; i < bars.length; i++) {
+      var b = bars[i];
+      var x = b.x;
+      var topH = Math.max(0, b.gapY);
+      var bottomY = b.gapY + b.gapH;
+      var bottomH = Math.max(0, viewH - bottomY);
+      var passed = !!b.passed;
+      drawBarSegment(ctx, x, 0, BAR_W, topH, passed, i, true);
+      drawBarSegment(ctx, x, bottomY, BAR_W, bottomH, passed, i, false);
+      drawGapMarkers(ctx, x, b.gapY, b.gapH, passed);
+    }
+  }
+
+  function drawBarSegment(ctx, x, y, w, h, passed, index, top) {
+    if (h <= 0 || x > viewW + w || x < -w * 1.5) return;
+    var edge = passed ? '#27ffe1' : '#ff3df2';
+    var fill = passed ? 'rgba(39,255,225,0.07)' : 'rgba(255,61,242,0.08)';
+    var stripe = top ? 1 : -1;
+
+    ctx.save();
+    ctx.fillStyle = fill;
+    ctx.fillRect(x, y, w, h);
+    ctx.strokeStyle = edge;
+    ctx.lineWidth = 2;
+    ctx.shadowColor = edge;
+    ctx.shadowBlur = 18;
+    ctx.strokeRect(x + 1, y + 1, w - 2, h - 2);
+
+    ctx.globalAlpha = 0.62;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    for (var yy = y + 14 + (index % 4) * 6; yy < y + h; yy += 24) {
+      ctx.moveTo(x + 8, yy);
+      ctx.lineTo(x + w - 8, yy + stripe * 6);
+    }
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawGapMarkers(ctx, x, gapY, gapH, passed) {
+    var color = passed ? '#b8fff7' : '#ffe96a';
+    ctx.save();
+    ctx.strokeStyle = color;
+    ctx.shadowColor = color;
+    ctx.shadowBlur = 14;
+    ctx.lineWidth = 3;
+    ctx.globalAlpha = 0.75;
+
+    ctx.beginPath();
+    ctx.moveTo(x - 4, gapY);
+    ctx.lineTo(x + BAR_W + 4, gapY);
+    ctx.moveTo(x - 4, gapY + gapH);
+    ctx.lineTo(x + BAR_W + 4, gapY + gapH);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawParticles(ctx) {
+    ctx.save();
+    ctx.globalCompositeOperation = 'lighter';
+    drawParticleSet(ctx, trail, 0.72);
+    drawParticleSet(ctx, burst, 1);
+    ctx.restore();
+  }
+
+  function drawParticleSet(ctx, list, scale) {
+    for (var i = 0; i < list.length; i++) {
+      var p = list[i];
+      var a = clamp(p.life / p.max, 0, 1);
+      ctx.globalAlpha = a * scale;
+      ctx.fillStyle = 'hsl(' + p.hue + ', 100%, 64%)';
+      ctx.shadowColor = ctx.fillStyle;
+      ctx.shadowBlur = 12;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r * (0.4 + a), 0, TWO_PI);
+      ctx.fill();
+    }
+  }
+
+  function drawOrb(ctx, state) {
+    var orb = state.orb || { y: viewH * 0.5, vy: 0, r: 14 };
+    var x = viewW * 0.28;
+    var thrust = clamp(Math.max(0, -orb.vy) / Math.max(1, state.thrust || 430), 0, 1.4);
+    var r = orb.r * (1 + thrust * 0.08);
+    var halo = r * (3.1 + thrust * 1.4);
+    var g = ctx.createRadialGradient(x, orb.y, r * 0.15, x, orb.y, halo);
+    g.addColorStop(0, 'rgba(255,255,255,0.92)');
+    g.addColorStop(0.22, 'rgba(126,255,246,0.75)');
+    g.addColorStop(0.58, 'rgba(255,61,242,0.24)');
+    g.addColorStop(1, 'rgba(255,61,242,0)');
+
+    ctx.save();
+    ctx.globalCompositeOperation = 'lighter';
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.arc(x, orb.y, halo, 0, TWO_PI);
+    ctx.fill();
+
+    ctx.shadowColor = '#8ffcff';
+    ctx.shadowBlur = 24;
+    ctx.fillStyle = '#f8ffff';
+    ctx.beginPath();
+    ctx.arc(x, orb.y, r, 0, TWO_PI);
+    ctx.fill();
+
+    ctx.shadowBlur = 8;
+    ctx.fillStyle = '#10142a';
+    ctx.globalAlpha = 0.55;
+    ctx.beginPath();
+    ctx.arc(x - r * 0.22, orb.y + r * 0.18, r * 0.36, 0, TWO_PI);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  function drawHud(ctx, state) {
+    ctx.save();
+    ctx.textBaseline = 'top';
+    ctx.font = '700 18px system-ui, -apple-system, Segoe UI, sans-serif';
+    ctx.fillStyle = '#e8fbff';
+    ctx.shadowColor = '#27ffe1';
+    ctx.shadowBlur = 10;
+    ctx.fillText('SCORE ' + (state.score || 0), 24, 20);
+
+    ctx.textAlign = 'right';
+    ctx.fillStyle = '#ffec78';
+    ctx.shadowColor = '#ff3df2';
+    ctx.fillText('HIGH ' + (state.high || 0), viewW - 24, 20);
+    ctx.restore();
+  }
+
+  function drawModeScreen(ctx, state) {
+    if (state.mode !== 'start' && state.mode !== 'over') return;
+
+    var isOver = state.mode === 'over';
+    ctx.save();
+    ctx.fillStyle = isOver ? 'rgba(5,5,16,0.58)' : 'rgba(5,5,16,0.34)';
+    ctx.fillRect(0, 0, viewW, viewH);
+
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.shadowBlur = 22;
+    ctx.shadowColor = isOver ? '#ff3d74' : '#27ffe1';
+    ctx.fillStyle = '#f8ffff';
+    ctx.font = '800 ' + clamp(viewW * 0.07, 36, 82) + 'px system-ui, -apple-system, Segoe UI, sans-serif';
+    ctx.fillText(isOver ? 'CRASHED' : 'NEON MAESTRO', viewW * 0.5, viewH * 0.42);
+
+    ctx.shadowBlur = 12;
+    ctx.fillStyle = isOver ? '#ffec78' : '#9ffefa';
+    ctx.font = '700 ' + clamp(viewW * 0.026, 17, 24) + 'px system-ui, -apple-system, Segoe UI, sans-serif';
+    ctx.fillText(isOver ? 'SCORE ' + (state.score || 0) + '   HIGH ' + (state.high || 0) : 'TAP / CLICK / SPACE TO CONDUCT', viewW * 0.5, viewH * 0.52);
+
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = 'rgba(232,251,255,0.72)';
+    ctx.font = '500 ' + clamp(viewW * 0.018, 13, 17) + 'px system-ui, -apple-system, Segoe UI, sans-serif';
+    ctx.fillText(isOver ? 'tap to restart the phrase' : 'thread the glowing gaps', viewW * 0.5, viewH * 0.59);
+    ctx.restore();
+  }
+
+  function drawFlash(ctx, dt) {
+    if (flash <= 0) return;
+    ctx.save();
+    ctx.globalCompositeOperation = 'lighter';
+    ctx.fillStyle = 'rgba(' + flashColor + ',' + clamp(flash, 0, 0.75) + ')';
+    ctx.fillRect(0, 0, viewW, viewH);
+    ctx.restore();
+    flash = Math.max(0, flash - dt * 2.9);
+  }
+
+  window.NM.Render = {
+    init: function (state) {
+      if (!initialized || state.w !== viewW || state.h !== viewH) {
+        resizeScratch(state);
+        if (!initialized) resetParticles();
+        lastVy = state.orb ? state.orb.vy : 0;
+      }
+      initialized = true;
+    },
+
+    draw: function (ctx, state, dt, events) {
+      dt = Math.max(0, Math.min(0.05, dt || 0));
+      events = events || {};
+      if (!initialized || state.w !== viewW || state.h !== viewH) this.init(state);
+      time += dt;
+
+      if (events.crashed) {
+        spawnCrashBurst(state);
+        state.screenShake = Math.max(state.screenShake || 0, 18);
+        setFlash(0.48, '255,61,116');
+      }
+      if (events.scored) setFlash(0.24, '39,255,225');
+      if (events.nearMiss) setFlash(0.13, '255,236,120');
+
+      spawnTrail(state, dt);
+      updateParticles(dt);
+
+      var shake = Math.max(0, state.screenShake || 0);
+      var sx = 0;
+      var sy = 0;
+      if (shake > 0.01) {
+        sx = (Math.random() * 2 - 1) * shake;
+        sy = (Math.random() * 2 - 1) * shake;
+        state.screenShake = Math.max(0, shake - dt * 34);
+      }
+
+      ctx.save();
+      ctx.translate(sx, sy);
+      drawBackground(ctx, state);
+      drawBars(ctx, state);
+      drawParticles(ctx);
+      drawOrb(ctx, state);
+      drawHud(ctx, state);
+      drawModeScreen(ctx, state);
+      ctx.restore();
+
+      drawFlash(ctx, dt);
+    }
+  };
+})();
+</script>
+<script>
+// audio.js — NM.Audio: Web Audio synth (Agent C, Sonnet 5).
+// Pure Web Audio (oscillators + gain envelopes), no assets. Rising pentatonic notes on
+// score so a run sounds like a climbing musical phrase; downbeat chord on start; detuned
+// hit on crash. Envelopes are short with a small attack/release so nothing clicks or pops.
+(function () {
+  window.NM = window.NM || {};
+
+  // Major pentatonic (semitone offsets from root) — every interval in this set is
+  // consonant, so notes always sound "right" no matter what order/timing they land in.
+  var PENTATONIC = [0, 2, 4, 7, 9];
+  var ROOT_HZ = 261.63; // C4
+  var MAX_OCTAVE = 3; // wrap after this many octaves so pitch keeps climbing but never gets shrill
+
+  window.NM.Audio = {
+    _ctx: null,
+    _master: null,
+
+    // Lazily create (or resume) the shared AudioContext + master gain. Must be called
+    // from a user gesture — the shell does this on every input — because browsers block
+    // autoplay of contexts created outside a gesture.
+    _ensure: function () {
+      if (!this._ctx) {
+        var Ctx = window.AudioContext || window.webkitAudioContext;
+        if (!Ctx) return null;
+        this._ctx = new Ctx();
+        this._master = this._ctx.createGain();
+        this._master.gain.value = 0.9;
+        this._master.connect(this._ctx.destination);
+      }
+      if (this._ctx.state === 'suspended') {
+        this._ctx.resume();
+      }
+      return this._ctx;
+    },
+
+    // resume() -> lazily create/resume AudioContext (called from a user gesture by the shell)
+    resume: function () {
+      this._ensure();
+    },
+
+    // Play one short oscillator voice through a lowpass filter into the master gain.
+    // Every envelope ramps from a small epsilon (exponential ramps can't target true 0)
+    // through a short attack to a peak, then back down — this is what keeps it click-free.
+    _voice: function (freq, opts) {
+      var ctx = this._ctx;
+      if (!ctx) return;
+      opts = opts || {};
+      var now = ctx.currentTime + (opts.delay || 0);
+      var duration = opts.duration || 0.18;
+      var attack = opts.attack || 0.008;
+      var peak = opts.gain != null ? opts.gain : 0.25;
+      var type = opts.type || 'sine';
+
+      var osc = ctx.createOscillator();
+      osc.type = type;
+      osc.frequency.setValueAtTime(freq, now);
+      if (opts.detune) osc.detune.setValueAtTime(opts.detune, now);
+      if (opts.freqEnd) {
+        osc.frequency.exponentialRampToValueAtTime(Math.max(opts.freqEnd, 1), now + duration);
+      }
+
+      var filter = ctx.createBiquadFilter();
+      filter.type = 'lowpass';
+      filter.frequency.setValueAtTime(opts.filterStart || 5000, now);
+      if (opts.filterEnd) {
+        filter.frequency.exponentialRampToValueAtTime(Math.max(opts.filterEnd, 40), now + duration);
+      }
+
+      var gain = ctx.createGain();
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.exponentialRampToValueAtTime(peak, now + attack);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+
+      osc.connect(filter);
+      filter.connect(gain);
+      gain.connect(this._master);
+
+      osc.start(now);
+      osc.stop(now + duration + 0.03); // stop a beat after the envelope fully decays
+    },
+
+    // start() -> a short rising "downbeat" chord when a run begins: a major triad
+    // arpeggiated with a tiny stagger, which reads as more musical than a flat stack.
+    start: function () {
+      var ctx = this._ensure();
+      if (!ctx) return;
+      var triad = [0, 4, 7, 12]; // root, third, fifth, octave
+      for (var i = 0; i < triad.length; i++) {
+        var freq = ROOT_HZ * Math.pow(2, triad[i] / 12);
+        this._voice(freq, {
+          delay: i * 0.05,
+          duration: 0.3,
+          attack: 0.01,
+          gain: 0.22,
+          type: 'triangle',
+          filterStart: 3500
+        });
+      }
+    },
+
+    // note(i) -> i-th note of the pentatonic scale. Degree cycles through the 5 scale
+    // tones; octave climbs with i and wraps every MAX_OCTAVE+1 octaves, so a long run
+    // still sounds like a climbing phrase without pitch drifting out of a pleasant range.
+    note: function (i) {
+      var ctx = this._ensure();
+      if (!ctx) return;
+      var n = Math.max(0, i | 0);
+      var degree = n % PENTATONIC.length;
+      var octave = Math.floor(n / PENTATONIC.length) % (MAX_OCTAVE + 1);
+      var semitone = PENTATONIC[degree] + octave * 12;
+      var freq = ROOT_HZ * Math.pow(2, semitone / 12);
+      this._voice(freq, {
+        duration: 0.16,
+        attack: 0.006,
+        gain: 0.28,
+        type: 'sine',
+        filterStart: 6000
+      });
+    },
+
+    // crash() -> short discordant/detuned hit: a couple of oscillators a tritone/minor-
+    // second apart, plus a fast downward filter sweep, so it reads as unambiguously wrong.
+    crash: function () {
+      var ctx = this._ensure();
+      if (!ctx) return;
+      var base = 110; // A2
+      this._voice(base, {
+        duration: 0.32,
+        attack: 0.003,
+        gain: 0.3,
+        type: 'sawtooth',
+        detune: -12,
+        freqEnd: base * 0.6,
+        filterStart: 2200,
+        filterEnd: 300
+      });
+      this._voice(base * Math.pow(2, 6 / 12), { // tritone above
+        duration: 0.28,
+        attack: 0.003,
+        gain: 0.24,
+        type: 'sawtooth',
+        detune: 14,
+        freqEnd: base * Math.pow(2, 6 / 12) * 0.6,
+        filterStart: 2000,
+        filterEnd: 250
+      });
+      this._voice(base * 2, { // octave, slightly detuned, sharpens the dissonance
+        duration: 0.22,
+        attack: 0.002,
+        gain: 0.16,
+        type: 'square',
+        detune: 30,
+        filterStart: 1500,
+        filterEnd: 200
+      });
+    }
+  };
+})();
+</script>
+
+<!-- The shell: canvas + resize + main loop + input. Owned by the architect; agents do NOT edit this. -->
+<script>
+(function () {
+  var canvas = document.getElementById('stage');
+  var ctx = canvas.getContext('2d');
+  var NM = window.NM || {};
+  var dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+
+  var state = NM.Core.createState(window.innerWidth, window.innerHeight);
+
+  function fit() {
+    var w = window.innerWidth, h = window.innerHeight;
+    canvas.style.width = w + 'px';
+    canvas.style.height = h + 'px';
+    canvas.width = Math.floor(w * dpr);
+    canvas.height = Math.floor(h * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    NM.Core.resize(state, w, h);
+    if (NM.Render.init) NM.Render.init(state);
+  }
+  window.addEventListener('resize', fit);
+
+  function onInput(e) {
+    if (e && e.cancelable) e.preventDefault();
+    if (NM.Audio.resume) NM.Audio.resume();
+    var r = NM.Core.input(state) || {};
+    if (r.started && NM.Audio.start) NM.Audio.start();
+  }
+  window.addEventListener('pointerdown', onInput, { passive: false });
+  window.addEventListener('keydown', function (e) {
+    if (e.code === 'Space' || e.key === ' ') onInput(e);
+  });
+
+  var last = 0;
+  function frame(ts) {
+    var dt = last ? Math.min(0.05, (ts - last) / 1000) : 0;
+    last = ts;
+    var events = {};
+    if (state.mode === 'play') events = NM.Core.update(state, dt) || {};
+    NM.Render.draw(ctx, state, dt, events);
+    if (events.scored && NM.Audio.note) NM.Audio.note(state.score);
+    if (events.crashed && NM.Audio.crash) NM.Audio.crash();
+    requestAnimationFrame(frame);
+  }
+
+  fit();
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

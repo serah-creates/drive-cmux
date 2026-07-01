@@ -1,0 +1,7 @@
+{
+  "_comment": "Optional. The portable defaults in dcx/config.py already work with NO config.json present. Copy this file to config.json only to override per-machine: a non-standard cmux path, a different password-file location, or a tweaked denylist. Paths may use ~ (expanded at load).",
+  "cli_path": "/Applications/cmux.app/Contents/Resources/bin/cmux",
+  "password_file": "~/.claude/skills/drive-cmux/state/socket-password.txt",
+  "state_dir": "~/.claude/skills/drive-cmux/state",
+  "denylist_patterns": ["ppv", "onlyfans", "serah", "vault", "fan", "crm", "purchase", "gemma", "chat-app", "orchestrator"]
+}

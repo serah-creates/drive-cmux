@@ -1,0 +1,568 @@
+{
+  "windows" : [
+    {
+      "ref" : "window:1",
+      "active" : true,
+      "selected_workspace_ref" : "workspace:1",
+      "key" : false,
+      "index" : 0,
+      "workspace_count" : 10,
+      "visible" : true,
+      "current" : true,
+      "workspaces" : [
+        {
+          "title" : "Fan CRM Purchases - Fable",
+          "selected" : true,
+          "panes" : [
+            {
+              "surface_refs" : [
+                "surface:1"
+              ],
+              "focused" : true,
+              "ref" : "pane:1",
+              "surface_count" : 1,
+              "selected_surface_ref" : "surface:1",
+              "index" : 0,
+              "surfaces" : [
+                {
+                  "url" : null,
+                  "active" : true,
+                  "index_in_pane" : 0,
+                  "selected" : true,
+                  "here" : false,
+                  "title" : "~/developer/unity-erp",
+                  "selected_in_pane" : true,
+                  "ref" : "surface:1",
+                  "focused" : true,
+                  "type" : "terminal",
+                  "index" : 0,
+                  "pane_ref" : "pane:1"
+                }
+              ],
+              "active" : true
+            }
+          ],
+          "ref" : "workspace:1",
+          "pinned" : false,
+          "index" : 0,
+          "active" : true
+        },
+        {
+          "ref" : "workspace:2",
+          "index" : 1,
+          "selected" : false,
+          "pinned" : false,
+          "active" : false,
+          "title" : "Unity Reusable Subcomponents",
+          "panes" : [
+            {
+              "surface_count" : 1,
+              "surface_refs" : [
+                "surface:2"
+              ],
+              "ref" : "pane:2",
+              "surfaces" : [
+                {
+                  "focused" : true,
+                  "url" : null,
+                  "active" : false,
+                  "pane_ref" : "pane:2",
+                  "here" : false,
+                  "selected" : true,
+                  "index" : 0,
+                  "ref" : "surface:2",
+                  "index_in_pane" : 0,
+                  "selected_in_pane" : true,
+                  "title" : "✳ Unity Reusable Subcomponents",
+                  "type" : "terminal"
+                }
+              ],
+              "focused" : true,
+              "active" : false,
+              "index" : 0,
+              "selected_surface_ref" : "surface:2"
+            }
+          ]
+        },
+        {
+          "panes" : [
+            {
+              "surfaces" : [
+                {
+                  "type" : "terminal",
+                  "index" : 0,
+                  "index_in_pane" : 0,
+                  "active" : false,
+                  "pane_ref" : "pane:3",
+                  "selected_in_pane" : true,
+                  "ref" : "surface:3",
+                  "here" : false,
+                  "selected" : true,
+                  "url" : null,
+                  "focused" : true,
+                  "title" : "✳ Enable PPV welcome auto-send on VIP page"
+                }
+              ],
+              "ref" : "pane:3",
+              "active" : false,
+              "surface_count" : 1,
+              "focused" : true,
+              "index" : 0,
+              "selected_surface_ref" : "surface:3",
+              "surface_refs" : [
+                "surface:3"
+              ]
+            }
+          ],
+          "selected" : false,
+          "ref" : "workspace:3",
+          "pinned" : false,
+          "index" : 2,
+          "title" : "PPV Sending Main Account - Fable",
+          "active" : false
+        },
+        {
+          "active" : false,
+          "title" : "PPV Terminal",
+          "selected" : false,
+          "index" : 3,
+          "panes" : [
+            {
+              "surfaces" : [
+                {
+                  "pane_ref" : "pane:14",
+                  "selected_in_pane" : true,
+                  "index_in_pane" : 0,
+                  "title" : "…/experimental/recon-ppv-save/orchestrator",
+                  "ref" : "surface:15",
+                  "type" : "terminal",
+                  "selected" : true,
+                  "focused" : true,
+                  "active" : false,
+                  "index" : 0,
+                  "url" : null,
+                  "here" : false
+                }
+              ],
+              "index" : 0,
+              "surface_count" : 1,
+              "ref" : "pane:14",
+              "selected_surface_ref" : "surface:15",
+              "surface_refs" : [
+                "surface:15"
+              ],
+              "active" : false,
+              "focused" : true
+            },
+            {
+              "index" : 1,
+              "selected_surface_ref" : "surface:14",
+              "surface_refs" : [
+                "surface:14"
+              ],
+              "surface_count" : 1,
+              "ref" : "pane:15",
+              "focused" : false,
+              "active" : false,
+              "surfaces" : [
+                {
+                  "url" : null,
+                  "selected" : true,
+                  "ref" : "surface:14",
+                  "here" : false,
+                  "pane_ref" : "pane:15",
+                  "active" : false,
+                  "selected_in_pane" : true,
+                  "type" : "terminal",
+                  "index" : 1,
+                  "index_in_pane" : 0,
+                  "focused" : false,
+                  "title" : "…/experimental/recon/chat-app"
+                }
+              ]
+            },
+            {
+              "focused" : false,
+              "surface_refs" : [
+                "surface:16"
+              ],
+              "surfaces" : [
+                {
+                  "active" : false,
+                  "index" : 2,
+                  "type" : "terminal",
+                  "focused" : false,
+                  "title" : "…/experimental/recon/web",
+                  "selected" : true,
+                  "ref" : "surface:16",
+                  "selected_in_pane" : true,
+                  "here" : false,
+                  "pane_ref" : "pane:16",
+                  "index_in_pane" : 0,
+                  "url" : null
+                }
+              ],
+              "index" : 2,
+              "selected_surface_ref" : "surface:16",
+              "ref" : "pane:16",
+              "surface_count" : 1,
+              "active" : false
+            },
+            {
+              "surfaces" : [
+                {
+                  "active" : false,
+                  "index" : 3,
+                  "here" : false,
+                  "index_in_pane" : 0,
+                  "ref" : "surface:17",
+                  "selected_in_pane" : true,
+                  "selected" : true,
+                  "focused" : false,
+                  "pane_ref" : "pane:17",
+                  "title" : "…/experimental/recon/orchestrator",
+                  "url" : null,
+                  "type" : "terminal"
+                }
+              ],
+              "active" : false,
+              "ref" : "pane:17",
+              "index" : 3,
+              "surface_refs" : [
+                "surface:17"
+              ],
+              "surface_count" : 1,
+              "selected_surface_ref" : "surface:17",
+              "focused" : false
+            }
+          ],
+          "ref" : "workspace:14",
+          "pinned" : false
+        },
+        {
+          "index" : 4,
+          "pinned" : false,
+          "title" : "Quotes finish P2 -  Ultracode",
+          "panes" : [
+            {
+              "active" : false,
+              "surfaces" : [
+                {
+                  "selected_in_pane" : true,
+                  "index" : 0,
+                  "active" : false,
+                  "title" : "~/developer/unity-erp",
+                  "url" : null,
+                  "here" : false,
+                  "index_in_pane" : 0,
+                  "pane_ref" : "pane:22",
+                  "selected" : true,
+                  "ref" : "surface:22",
+                  "type" : "terminal",
+                  "focused" : true
+                }
+              ],
+              "ref" : "pane:22",
+              "focused" : true,
+              "surface_refs" : [
+                "surface:22"
+              ],
+              "index" : 0,
+              "selected_surface_ref" : "surface:22",
+              "surface_count" : 1
+            }
+          ],
+          "active" : false,
+          "selected" : false,
+          "ref" : "workspace:19"
+        },
+        {
+          "pinned" : false,
+          "selected" : false,
+          "title" : "Internal orders - Ultracode",
+          "index" : 5,
+          "active" : false,
+          "ref" : "workspace:21",
+          "panes" : [
+            {
+              "surface_count" : 1,
+              "surfaces" : [
+                {
+                  "index" : 0,
+                  "active" : false,
+                  "pane_ref" : "pane:24",
+                  "ref" : "surface:24",
+                  "type" : "terminal",
+                  "selected" : true,
+                  "selected_in_pane" : true,
+                  "here" : false,
+                  "focused" : true,
+                  "title" : "~/developer/unity-erp",
+                  "url" : null,
+                  "index_in_pane" : 0
+                }
+              ],
+              "ref" : "pane:24",
+              "selected_surface_ref" : "surface:24",
+              "focused" : true,
+              "surface_refs" : [
+                "surface:24"
+              ],
+              "index" : 0,
+              "active" : false
+            }
+          ]
+        },
+        {
+          "active" : false,
+          "title" : "π - recon",
+          "index" : 6,
+          "panes" : [
+            {
+              "index" : 0,
+              "focused" : true,
+              "ref" : "pane:46",
+              "surface_count" : 1,
+              "surface_refs" : [
+                "surface:47"
+              ],
+              "selected_surface_ref" : "surface:47",
+              "surfaces" : [
+                {
+                  "selected" : true,
+                  "here" : false,
+                  "title" : "~/experimental/recon",
+                  "url" : null,
+                  "selected_in_pane" : true,
+                  "ref" : "surface:47",
+                  "pane_ref" : "pane:46",
+                  "type" : "terminal",
+                  "index_in_pane" : 0,
+                  "active" : false,
+                  "index" : 0,
+                  "focused" : true
+                }
+              ],
+              "active" : false
+            },
+            {
+              "surface_count" : 1,
+              "ref" : "pane:47",
+              "selected_surface_ref" : "surface:48",
+              "active" : false,
+              "focused" : false,
+              "index" : 1,
+              "surface_refs" : [
+                "surface:48"
+              ],
+              "surfaces" : [
+                {
+                  "focused" : false,
+                  "url" : null,
+                  "here" : false,
+                  "active" : false,
+                  "index_in_pane" : 0,
+                  "pane_ref" : "pane:47",
+                  "ref" : "surface:48",
+                  "type" : "terminal",
+                  "index" : 1,
+                  "selected" : true,
+                  "title" : "~/experimental/recon",
+                  "selected_in_pane" : true
+                }
+              ]
+            },
+            {
+              "ref" : "pane:48",
+              "surface_count" : 1,
+              "index" : 2,
+              "focused" : false,
+              "surfaces" : [
+                {
+                  "active" : false,
+                  "index" : 2,
+                  "index_in_pane" : 0,
+                  "url" : null,
+                  "selected_in_pane" : true,
+                  "selected" : true,
+                  "ref" : "surface:46",
+                  "pane_ref" : "pane:48",
+                  "focused" : false,
+                  "here" : false,
+                  "title" : "~/experimental/recon",
+                  "type" : "terminal"
+                }
+              ],
+              "selected_surface_ref" : "surface:46",
+              "surface_refs" : [
+                "surface:46"
+              ],
+              "active" : false
+            }
+          ],
+          "selected" : false,
+          "ref" : "workspace:31",
+          "pinned" : false
+        },
+        {
+          "title" : "π - unity-erp",
+          "selected" : false,
+          "index" : 7,
+          "active" : false,
+          "pinned" : false,
+          "ref" : "workspace:33",
+          "panes" : [
+            {
+              "focused" : true,
+              "surface_count" : 1,
+              "surface_refs" : [
+                "surface:53"
+              ],
+              "active" : false,
+              "ref" : "pane:53",
+              "index" : 0,
+              "selected_surface_ref" : "surface:53",
+              "surfaces" : [
+                {
+                  "type" : "terminal",
+                  "pane_ref" : "pane:53",
+                  "index_in_pane" : 0,
+                  "selected" : true,
+                  "ref" : "surface:53",
+                  "url" : null,
+                  "title" : "π - unity-erp",
+                  "here" : false,
+                  "focused" : true,
+                  "selected_in_pane" : true,
+                  "index" : 0,
+                  "active" : false
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title" : "π - multi agent setup",
+          "panes" : [
+            {
+              "surface_refs" : [
+                "surface:54"
+              ],
+              "surfaces" : [
+                {
+                  "selected_in_pane" : true,
+                  "index" : 0,
+                  "title" : "π - unity-erp",
+                  "active" : false,
+                  "url" : null,
+                  "here" : false,
+                  "pane_ref" : "pane:54",
+                  "ref" : "surface:54",
+                  "selected" : true,
+                  "focused" : true,
+                  "index_in_pane" : 0,
+                  "type" : "terminal"
+                }
+              ],
+              "focused" : true,
+              "surface_count" : 1,
+              "ref" : "pane:54",
+              "index" : 0,
+              "active" : false,
+              "selected_surface_ref" : "surface:54"
+            }
+          ],
+          "ref" : "workspace:34",
+          "active" : false,
+          "selected" : false,
+          "index" : 8,
+          "pinned" : false
+        },
+        {
+          "title" : "Gemma Box - LLM inference",
+          "panes" : [
+            {
+              "surface_refs" : [
+                "surface:60"
+              ],
+              "surfaces" : [
+                {
+                  "selected_in_pane" : true,
+                  "index" : 0,
+                  "title" : "onlyfans.com — Serah Luna",
+                  "active" : false,
+                  "url" : "https://onlyfans.com/serahluna/chats",
+                  "here" : false,
+                  "pane_ref" : "pane:60",
+                  "ref" : "surface:60",
+                  "selected" : true,
+                  "focused" : true,
+                  "index_in_pane" : 0,
+                  "type" : "browser"
+                }
+              ],
+              "focused" : true,
+              "surface_count" : 1,
+              "ref" : "pane:60",
+              "index" : 0,
+              "active" : false,
+              "selected_surface_ref" : "surface:60"
+            }
+          ],
+          "ref" : "workspace:35",
+          "active" : false,
+          "selected" : false,
+          "index" : 9,
+          "pinned" : false
+        },
+        {
+          "title" : "dcx: notes on the drive-cmux skill",
+          "panes" : [
+            {
+              "surface_refs" : [
+                "surface:70"
+              ],
+              "surfaces" : [
+                {
+                  "selected_in_pane" : true,
+                  "index" : 0,
+                  "title" : "~/notes/dcx-skill",
+                  "active" : false,
+                  "url" : null,
+                  "here" : false,
+                  "pane_ref" : "pane:70",
+                  "ref" : "surface:70",
+                  "selected" : true,
+                  "focused" : true,
+                  "index_in_pane" : 0,
+                  "type" : "terminal"
+                }
+              ],
+              "focused" : true,
+              "surface_count" : 1,
+              "ref" : "pane:70",
+              "index" : 0,
+              "active" : false,
+              "selected_surface_ref" : "surface:70"
+            }
+          ],
+          "ref" : "workspace:36",
+          "active" : false,
+          "selected" : false,
+          "index" : 10,
+          "pinned" : false
+        }
+      ]
+    }
+  ],
+  "active" : {
+    "tab_ref" : "tab:1",
+    "is_browser_surface" : false,
+    "window_ref" : "window:1",
+    "surface_type" : "terminal",
+    "surface_ref" : "surface:1",
+    "pane_ref" : "pane:1",
+    "workspace_ref" : "workspace:1"
+  },
+  "caller" : null
+}
