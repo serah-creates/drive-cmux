@@ -12,14 +12,14 @@ The toolkit lives at `~/.claude/skills/drive-cmux/`. Run it by **absolute path**
 
 ```bash
 DCX=~/.claude/skills/drive-cmux/dcx.py
-python3.12 "$DCX" preflight        # → {"ok": true}
+python3 "$DCX" preflight        # → {"ok": true}
 ```
 
-In the examples below, `dcx` means `python3.12 ~/.claude/skills/drive-cmux/dcx.py`. Every verb prints exactly one JSON object to stdout.
+In the examples below, `dcx` means `python3 ~/.claude/skills/drive-cmux/dcx.py`. Every verb prints exactly one JSON object to stdout.
 
 ## Prereqs
 - cmux Settings → Socket Control Mode = **Password mode**; password in the file named in `config.json` (portable default: `~/.claude/skills/drive-cmux/state/socket-password.txt`, git-ignored).
-- `python3.12 "$DCX" preflight` → `{"ok": true}` confirms the socket is reachable (fails loud otherwise).
+- `python3 "$DCX" preflight` → `{"ok": true}` confirms the socket is reachable (fails loud otherwise).
 - **New machine?** See `SETUP.md` (next to this file) — clone the repo into `~/.claude/skills/drive-cmux/`, enable Password mode, then `dcx set-password` (writes the secret to the configured path with `0600`; `--generate` makes one to paste into cmux), run `preflight`. The skill is portable; no paths are hard-coded to one machine. The user should run `set-password` themselves so the password stays out of the transcript.
 
 ## Core verbs

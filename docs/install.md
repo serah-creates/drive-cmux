@@ -2,7 +2,7 @@
 
 This takes about 10 minutes. You don't need to be a developer — just comfortable copy-pasting a couple of commands. macOS only for now.
 
-> 🚧 The skill files land in this repo right after the launch video. This guide is written for that moment — bookmark it, and **⭐ Watch** the repo so you know when it's ready.
+> ⚡ **Fastest path:** `git clone https://github.com/serah-creates/drive-cmux.git && cd drive-cmux && ./install.sh` — or open Claude Code in the cloned repo and say *"read this repo and set up the drive-cmux skill for me."* The steps below are the manual version.
 
 ---
 
@@ -24,7 +24,7 @@ You can start with just one lane (e.g. only GPT-5.5, or only Claude) and add the
 
 1. Install the **cmux** app and open it once.
 2. Install and sign in to **Claude Code** and the **Codex CLI** (whichever lanes you want).
-3. Make sure **Python 3.12** is available: `python3.12 --version`.
+3. Make sure **Python 3.12** is available: `python3 --version`.
 
 ## Step 2 — Turn on cmux socket control
 
@@ -51,8 +51,8 @@ Set the cmux socket password (the tool writes it to a local, git-ignored file �
 
 ```bash
 DCX=~/.claude/skills/drive-cmux/dcx.py
-python3.12 "$DCX" set-password --generate   # prints a password to paste into cmux Settings
-python3.12 "$DCX" preflight                 # → {"ok": true} means you're ready
+python3 "$DCX" set-password --generate   # prints a password to paste into cmux Settings
+python3 "$DCX" preflight                 # → {"ok": true} means you're ready
 ```
 
 When `preflight` returns `{"ok": true}`, you're set.

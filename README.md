@@ -48,14 +48,19 @@ In it, three agents build a neon arcade game **at the same time**, an architect 
 
 ---
 
-## 🚀 Quickstart
+## 🚀 Quick start
 
-Full, newcomer-friendly steps are in **[docs/install.md](docs/install.md)**. The short version:
+**Two commands:**
+```bash
+git clone https://github.com/serah-creates/drive-cmux.git
+cd drive-cmux && ./install.sh
+```
+`install.sh` copies the skill into `~/.claude/skills/` and prints the last one-time steps (cmux Password mode, `set-password`, model auth).
 
-1. Install the **cmux** app (macOS) and turn on **Password** socket-control mode.
-2. Have **Claude Code** and the **Codex CLI** installed and signed in (that's your Claude + GPT lanes).
-3. Drop this skill into `~/.claude/skills/drive-cmux/`.
-4. Set the socket password and run the preflight check.
+**Or just let Claude Code do it** — clone the repo, open Claude Code inside it, and say:
+> *"Read this repo and set up the drive-cmux skill for me."*
+
+Full walkthrough + troubleshooting: **[docs/install.md](docs/install.md)**. (Needs **Python 3.10+** — no specific version.)
 
 Then, from any project, just tell Claude Code: *"use drive-cmux to…"* and start conducting.
 
