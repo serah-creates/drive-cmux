@@ -4,7 +4,7 @@
 
 One genius model writes the plan. A fleet of cheaper models does the work. **You conduct** — from your terminal.
 
-Powered by the **`/drive-cmux`** skill for [Claude Code](https://www.anthropic.com/claude-code), driving the local [**cmux**](https://cmux.dev) app. macOS.
+Powered by the **`/drive-cmux`** skill for [Claude Code](https://www.anthropic.com/claude-code), driving the local [**cmux**](https://cmux.com) app. macOS.
 
 > 🎉 **The skill is here.** `skills/drive-cmux/` is the full conductor — see **[docs/install.md](docs/install.md)** to set it up in ~10 minutes. ⭐ Star it if it saves you a few Fable credits.
 
@@ -131,4 +131,4 @@ drive-cmux/
 
 Code: **[MIT](LICENSE)** — use it, remix it, build with it. A credit to *Serah Creates* is always appreciated.
 
-*drive-cmux stands on the shoulders of [cmux](https://cmux.dev), [Claude Code](https://www.anthropic.com/claude-code), and the [Codex CLI](https://openai.com/). Model names belong to their makers.*
+*drive-cmux stands on the shoulders of [cmux](https://cmux.com), [Claude Code](https://www.anthropic.com/claude-code), and the [Codex CLI](https://openai.com/). Model names belong to their makers.*

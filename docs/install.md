@@ -11,7 +11,7 @@ This takes about 10 minutes. You don't need to be a developer — just comfortab
 | Thing | What it's for | Where |
 |---|---|---|
 | **macOS** | The whole thing runs on Mac | — |
-| **cmux app** | The "stage" where the agents perform | [cmux.dev](https://cmux.dev) |
+| **cmux app** | The "stage" where the agents perform | [cmux.com](https://cmux.com) |
 | **Claude Code** | Runs the conductor + the Claude/Sonnet/Fable lanes | [anthropic.com/claude-code](https://www.anthropic.com/claude-code) |
 | **Codex CLI** | Runs the GPT-5.5 builder lane | [openai.com](https://openai.com/) |
 | **Python 3.12** | Runs the little `dcx` conductor tool | `brew install python@3.12` |

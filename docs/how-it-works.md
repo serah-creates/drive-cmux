@@ -1,6 +1,6 @@
 # 🎻 How it works — the orchestra
 
-drive-cmux doesn't run any AI itself. It's a **conductor**. It tells the [cmux](https://cmux.dev) app to open agent sessions, hands each one a task and the right model, and then waits to be told when they're done. You watch it all happen in real panes on your screen.
+drive-cmux doesn't run any AI itself. It's a **conductor**. It tells the [cmux](https://cmux.com) app to open agent sessions, hands each one a task and the right model, and then waits to be told when they're done. You watch it all happen in real panes on your screen.
 
 Here's the whole idea in four movements.
 
