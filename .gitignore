@@ -1,0 +1,27 @@
+# --- Secrets & machine-local config (NEVER commit) ---
+# The cmux socket password and anything derived from it
+**/socket-password.txt
+**/state/socket-password*
+# Machine-local skill config (portable defaults live in config.example.json)
+**/config.json
+!**/config.example.json
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.venv/
+venv/
+
+# --- OS / editor cruft ---
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/
+
+# --- Local scratch / logs ---
+*.log
+scratch/
+tmp/
