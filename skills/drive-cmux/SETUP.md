@@ -14,7 +14,7 @@ is the local prerequisites below (cmux + a socket password + Python). macOS + cm
 | Need | Check | Install |
 |------|-------|---------|
 | **cmux** desktop app | `ls /Applications/cmux.app` | Install cmux normally into `/Applications`. |
-| **Python 3.12** | `python3 --version` | `brew install python@3.12` |
+| **Python 3.10+** | `python3 --version` | any modern `python3` |
 | **Codex CLI** *(only for Codex/GPT-5.5 fleets)* | `codex --version` | Install per your Codex setup, then create `~/.codex/config.toml` (see step 6). |
 
 ## 2. Get the skill onto the machine
@@ -105,7 +105,7 @@ cp ~/.claude/skills/drive-cmux/config.example.json ~/.claude/skills/drive-cmux/c
 | `{"ok": false, "error_type": "CmuxError", ...}` mentioning the binary | cmux not at `/Applications/cmux.app/...`; set `cli_path` in a local `config.json`. |
 | Error opening the password file | File missing or at the wrong path — redo step 4 (or point `password_file` at it in `config.json`). |
 | Connects but rejects | Password in the file doesn't match cmux Settings → re-copy it (step 3–4). |
-| `python3: command not found` | `brew install python@3.12`. |
+| `python3: command not found` | any modern `python3`. |
 
 After fixing, re-run step 5.
 

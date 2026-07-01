@@ -111,7 +111,7 @@ drive-cmux/
 - **macOS** + the **cmux** app.
 - **Claude Code** (for the architect + research lanes).
 - **Codex CLI** (for the GPT-5.5 builder lane).
-- **Python 3.12**.
+- **Python 3.10+**.
 
 (You can run just the GPT lane, or just the Claude lanes — but the magic is using them together.)
 

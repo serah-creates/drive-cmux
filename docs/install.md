@@ -14,7 +14,7 @@ This takes about 10 minutes. You don't need to be a developer — just comfortab
 | **cmux app** | The "stage" where the agents perform | [cmux.com](https://cmux.com) |
 | **Claude Code** | Runs the conductor + the Claude/Sonnet/Fable lanes | [anthropic.com/claude-code](https://www.anthropic.com/claude-code) |
 | **Codex CLI** | Runs the GPT-5.5 builder lane | [openai.com](https://openai.com/) |
-| **Python 3.12** | Runs the little `dcx` conductor tool | `brew install python@3.12` |
+| **Python 3.10+** | Runs the little `dcx` conductor tool | any modern `python3` |
 
 You can start with just one lane (e.g. only GPT-5.5, or only Claude) and add the other later. The full orchestra uses both.
 
@@ -24,7 +24,7 @@ You can start with just one lane (e.g. only GPT-5.5, or only Claude) and add the
 
 1. Install the **cmux** app and open it once.
 2. Install and sign in to **Claude Code** and the **Codex CLI** (whichever lanes you want).
-3. Make sure **Python 3.12** is available: `python3 --version`.
+3. Make sure **Python 3.10+** is available: `python3 --version`.
 
 ## Step 2 — Turn on cmux socket control
 
