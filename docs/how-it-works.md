@@ -1,6 +1,6 @@
 # 🎻 How it works — the orchestra
 
-Agent Orchestra doesn't run any AI itself. It's a **conductor**. It tells the [cmux](https://cmux.dev) app to open agent sessions, hands each one a task and the right model, and then waits to be told when they're done. You watch it all happen in real panes on your screen.
+drive-cmux doesn't run any AI itself. It's a **conductor**. It tells the [cmux](https://cmux.dev) app to open agent sessions, hands each one a task and the right model, and then waits to be told when they're done. You watch it all happen in real panes on your screen.
 
 Here's the whole idea in four movements.
 
@@ -36,7 +36,7 @@ That's the "one genius directing many hands" pattern, made literal on your scree
 
 ## 3. Staying out of each other's way (worktrees)
 
-When several builders touch the same repo at once, they'd trip over each other. So Agent Orchestra can give each one its **own git worktree + branch** (`dcx/<task>`). They build in isolation, and you merge the good ones. No collisions, no half-finished files stepping on each other.
+When several builders touch the same repo at once, they'd trip over each other. So drive-cmux can give each one its **own git worktree + branch** (`dcx/<task>`). They build in isolation, and you merge the good ones. No collisions, no half-finished files stepping on each other.
 
 ---
 

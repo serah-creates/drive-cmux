@@ -1,6 +1,6 @@
 # 🛡️ Safety — the honest version
 
-Agent Orchestra drives real agents that write real code on your machine. That's powerful, so here's exactly what it will and won't do — and where **you** stay responsible.
+drive-cmux drives real agents that write real code on your machine. That's powerful, so here's exactly what it will and won't do — and where **you** stay responsible.
 
 ---
 

@@ -40,9 +40,9 @@ This is what lets the conductor talk to cmux safely. (Password mode means only s
 Put this skill where Claude Code looks for global skills:
 
 ```bash
-git clone https://github.com/serah-creates/agent-orchestra.git
+git clone https://github.com/serah-creates/drive-cmux.git
 # copy the skill into place (path may be finalized in the release):
-cp -R agent-orchestra/skills/drive-cmux ~/.claude/skills/drive-cmux
+cp -R drive-cmux/skills/drive-cmux ~/.claude/skills/drive-cmux
 ```
 
 ## Step 4 — Set the password & preflight

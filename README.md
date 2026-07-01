@@ -1,4 +1,4 @@
-# 🎻 Agent Orchestra
+# 🎻 drive-cmux
 
 > **Build _with_ AI, not against it — a whole orchestra of it.**
 
@@ -20,7 +20,7 @@ You use the expensive, brilliant model as the **architect** — it writes the pl
 
 **One expensive brain. A room full of cheap, capable hands.** That's how you afford genius.
 
-Agent Orchestra is the little conductor's baton that makes that easy.
+drive-cmux is the little conductor's baton that makes that easy.
 
 ---
 
@@ -86,7 +86,7 @@ The honest, full version — including **what you should never let a cheap agent
 ## 📦 What's in this repo
 
 ```
-agent-orchestra/
+drive-cmux/
 ├── README.md              ← you are here
 ├── docs/
 │   ├── install.md         # step-by-step setup for newcomers
@@ -126,4 +126,4 @@ agent-orchestra/
 
 Code: **[MIT](LICENSE)** — use it, remix it, build with it. A credit to *Serah Creates* is always appreciated.
 
-*Agent Orchestra stands on the shoulders of [cmux](https://cmux.dev), [Claude Code](https://www.anthropic.com/claude-code), and the [Codex CLI](https://openai.com/). Model names belong to their makers.*
+*drive-cmux stands on the shoulders of [cmux](https://cmux.dev), [Claude Code](https://www.anthropic.com/claude-code), and the [Codex CLI](https://openai.com/). Model names belong to their makers.*
