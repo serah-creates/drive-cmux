@@ -13,10 +13,10 @@ This takes about 10 minutes. You don't need to be a developer — just comfortab
 | **macOS** | The whole thing runs on Mac | — |
 | **cmux app** | The "stage" where the agents perform | [cmux.com](https://cmux.com) |
 | **Claude Code** | Runs the conductor + the Claude/Sonnet/Fable lanes | [anthropic.com/claude-code](https://www.anthropic.com/claude-code) |
-| **Codex CLI** | Runs the GPT-5.5 builder lane | [openai.com](https://openai.com/) |
+| **Codex CLI** | Runs the GPT-5.6 builder lane | [openai.com](https://openai.com/) |
 | **Python 3.10+** | Runs the little `dcx` conductor tool | any modern `python3` |
 
-You can start with just one lane (e.g. only GPT-5.5, or only Claude) and add the other later. The full orchestra uses both.
+You can start with just one lane (e.g. only GPT-5.6, or only Claude) and add the other later. The full orchestra uses both.
 
 ---
 
@@ -63,7 +63,7 @@ When `preflight` returns `{"ok": true}`, you're set.
 
 From **any** project folder, open Claude Code and say:
 
-> *"Use drive-cmux to spin up a GPT-5.5 agent that adds a README to this project, and ping me when it's done."*
+> *"Use drive-cmux to spin up a GPT-5.6 agent that adds a README to this project, and ping me when it's done."*
 
 You'll see a pane open in cmux, do the work, and report back. Congratulations — you just conducted your first (very small) orchestra. 🎻
 

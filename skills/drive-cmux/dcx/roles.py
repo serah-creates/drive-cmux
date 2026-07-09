@@ -37,6 +37,27 @@ ROLE_EFFORT = {
     "scaffold":        "low",
 }
 
+# Codex model tier per role (GPT-5.6 family; gpt-5.5 is retired). Match the model
+# tier to task value, not just the effort — model tier is the bigger cost lever:
+#   sol   ($5/$30)   flagship  -> high-value judgment: plans, adversarial/security
+#   terra ($2.50/$15) all-rounder -> everyday strong reasoning: reviews, builds
+#   luna  ($1/$6)    high-volume -> well-specified mechanical work
+ROLE_CODEX_MODEL = {
+    "plan-review":     "gpt-5.6-sol",
+    "design-review":   "gpt-5.6-sol",
+    "adversarial":     "gpt-5.6-sol",
+    "security-review": "gpt-5.6-sol",
+    "architect":       "gpt-5.6-sol",
+    "code-review":     "gpt-5.6-terra",
+    "diff-review":     "gpt-5.6-terra",
+    "review":          "gpt-5.6-terra",
+    "research":        "gpt-5.6-terra",
+    "build":           "gpt-5.6-terra",
+    "implement":       "gpt-5.6-terra",
+    "mechanical":      "gpt-5.6-luna",
+    "scaffold":        "gpt-5.6-luna",
+}
+
 # The Claude lane: the same roles -> a Claude model. Spend the "genius" tier
 # (Opus 4.8; pin claude-fable-5 to ration Fable) where reasoning compounds
 # (plans, deep reviews); use the cheap "workhorse" (Sonnet 5) for research and
@@ -69,6 +90,9 @@ _CLAUDE_RE = re.compile(r"\bclaude\b")
 _EFFORT_RE = re.compile(r"model_reasoning_effort\s*=\s*([A-Za-z]+)")
 _TIER_RE = re.compile(r"service_tier\s*=\s*([A-Za-z]+)")
 _MODEL_RE = re.compile(r"--model[=\s]+(\S+)")
+# Codex accepts either `-m <model>` or `--model <model>`; require a word boundary
+# so it can't match `-m` inside another token (e.g. `-c model_reasoning_effort=`).
+_CODEX_MODEL_RE = re.compile(r"(?<!\S)(?:-m|--model)[=\s]+(\S+)")
 
 
 def effort_for(role):
@@ -77,6 +101,14 @@ def effort_for(role):
         valid = ", ".join(sorted(ROLE_EFFORT))
         raise RoleError(f"unknown role {role!r}; valid roles: {valid}")
     return ROLE_EFFORT[key]
+
+
+def codex_model_for(role):
+    key = (role or "").strip().lower()
+    if key not in ROLE_CODEX_MODEL:
+        valid = ", ".join(sorted(ROLE_CODEX_MODEL))
+        raise RoleError(f"unknown role {role!r}; valid roles: {valid}")
+    return ROLE_CODEX_MODEL[key]
 
 
 def model_for(role):
@@ -117,6 +149,19 @@ def apply_role(command, role):
     if existing:
         return command, existing.group(1), False
     return _splice_after_codex(command, f" -c model_reasoning_effort={preset}"), preset, True
+
+
+def apply_codex_model(command, role):
+    """Return (new_command, model, injected) for the Codex lane.
+
+    Inject `-m <gpt-5.6 variant>` for the role (sol/terra/luna) unless the command
+    already pins a model with `-m`/`--model`, in which case that explicit model
+    wins and is reported (injected=False)."""
+    preset = codex_model_for(role)
+    existing = _CODEX_MODEL_RE.search(command)
+    if existing:
+        return command, existing.group(1), False
+    return _splice_after_codex(command, f" -m {preset}"), preset, True
 
 
 def _splice_after_claude(command, fragment):

@@ -1,7 +1,7 @@
 # dcx/ops.py
 import os, secrets, shlex, select, time
 from . import fence
-from .roles import apply_role, apply_tier, apply_model, detect_engine
+from .roles import apply_role, apply_codex_model, apply_tier, apply_model, detect_engine
 from .tree import parse_tree, find_workspace, find_surface, first_surface_ref
 
 # Commands longer than this are run from a short temp script instead of pasted
@@ -63,7 +63,8 @@ class Ops:
         if role:
             engine = detect_engine(command)
             if engine == "codex":
-                command, effort, _ = apply_role(command, role)
+                command, effort, _ = apply_role(command, role)          # effort
+                command, model, _ = apply_codex_model(command, role)    # GPT-5.6 tier
             else:  # claude lane: pick the model for the role instead of codex effort
                 command, model, _ = apply_model(command, role)
         if fast and engine != "claude":   # service tier is a Codex-only concept

@@ -14,7 +14,7 @@ Not every task deserves your most expensive model. The trick is matching the mod
 |---|---|---|
 | **Architect / Reviewer** | Opus 4.8 → **Fable 5** | The plan and the final review are where quality is decided. Spend your genius here. |
 | **Researcher** | **Sonnet 5** | Reading, gathering, fact-checking. Very capable, much cheaper than the top tier. |
-| **Builder** | **GPT-5.5** (via Codex) | Turning a good plan into working code. The workhorse — and you run several at once. |
+| **Builder** | **GPT-5.6** (via Codex) | Turning a good plan into working code. The workhorse — and you run several at once. |
 
 You pick the lane with a simple `--role` (or `--engine` + `--model`). A good plan does the hard thinking once, so the builders can run at a lower, cheaper reasoning effort without churning.
 

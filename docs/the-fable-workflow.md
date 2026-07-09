@@ -11,7 +11,7 @@ The mistake is to hand Fable *everything*. The move is to hand it **only the thi
 In almost any build, a small slice of the work decides whether the result is good, and the rest is just… doing it.
 
 - **The ~20% that decides quality:** the architecture, the plan, the tricky trade-offs, and the final review. → **This is Fable's job.**
-- **The ~80% that's execution:** the research, the boilerplate, the typing, the obvious fixes. → **This is the fleet's job** (Sonnet 5 to research, GPT-5.5 to build).
+- **The ~80% that's execution:** the research, the boilerplate, the typing, the obvious fixes. → **This is the fleet's job** (Sonnet 5 to research, GPT-5.6 to build).
 
 **One expensive brain. A room full of cheap, capable hands.**
 
@@ -21,7 +21,7 @@ In almost any build, a small slice of the work decides whether the result is goo
 
 1. **Brief the architect (Fable 5 / your best model).** Give it the goal. Ask for a *plan* and a clear breakdown into independent tasks — not code.
 2. **Let the researcher (Sonnet 5) dig.** Facts, docs, options, gotchas — cheaply, in parallel with everything else.
-3. **Fan out the builders (GPT-5.5).** One task each, at a sensible reasoning effort, in their own worktrees. Several at once.
+3. **Fan out the builders (GPT-5.6).** One task each, at a sensible reasoning effort, in their own worktrees. Several at once.
 4. **Bring the architect back for the review.** This is the second place Fable earns its keep — catching the thing the cheap agents missed.
 5. **You conduct.** Approve, redirect, merge.
 

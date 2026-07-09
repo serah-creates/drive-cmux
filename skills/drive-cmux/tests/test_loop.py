@@ -38,10 +38,13 @@ def test_run_session_surfaces_role_effort_tier_from_spawn():
     base = dict(ops.spawned)
     def spawn(cwd, command, task_slug, role=None, fast=False):
         ops.calls.append(("spawn", cwd, command, task_slug, role, fast))
-        return {**base, "role": role, "reasoning_effort": "xhigh", "service_tier": "priority"}
+        return {**base, "role": role, "engine": "codex", "model": "gpt-5.6-sol",
+                "reasoning_effort": "xhigh", "service_tier": "priority"}
     ops.spawn = spawn
     res = Loop(ops).run_session("/tmp/x", "codex exec hi", "planner", role="plan-review", fast=True)
     assert res["role"] == "plan-review"
+    assert res["engine"] == "codex"
+    assert res["model"] == "gpt-5.6-sol"          # model tier surfaced (was dropped before)
     assert res["reasoning_effort"] == "xhigh"
     assert res["service_tier"] == "priority"
 

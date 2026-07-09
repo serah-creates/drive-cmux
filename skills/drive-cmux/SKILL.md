@@ -12,14 +12,14 @@ The toolkit lives at `~/.claude/skills/drive-cmux/`. Run it by **absolute path**
 
 ```bash
 DCX=~/.claude/skills/drive-cmux/dcx.py
-python3 "$DCX" preflight        # → {"ok": true}
+python3.12 "$DCX" preflight        # → {"ok": true}
 ```
 
-In the examples below, `dcx` means `python3 ~/.claude/skills/drive-cmux/dcx.py`. Every verb prints exactly one JSON object to stdout.
+In the examples below, `dcx` means `python3.12 ~/.claude/skills/drive-cmux/dcx.py`. Every verb prints exactly one JSON object to stdout.
 
 ## Prereqs
 - cmux Settings → Socket Control Mode = **Password mode**; password in the file named in `config.json` (portable default: `~/.claude/skills/drive-cmux/state/socket-password.txt`, git-ignored).
-- `python3 "$DCX" preflight` → `{"ok": true}` confirms the socket is reachable (fails loud otherwise).
+- `python3.12 "$DCX" preflight` → `{"ok": true}` confirms the socket is reachable (fails loud otherwise).
 - **New machine?** See `SETUP.md` (next to this file) — clone the repo into `~/.claude/skills/drive-cmux/`, enable Password mode, then `dcx set-password` (writes the secret to the configured path with `0600`; `--generate` makes one to paste into cmux), run `preflight`. The skill is portable; no paths are hard-coded to one machine. The user should run `set-password` themselves so the password stays out of the transcript.
 
 ## Core verbs
@@ -48,26 +48,26 @@ In the examples below, `dcx` means `python3 ~/.claude/skills/drive-cmux/dcx.py`.
 
 ## Codex fleet defaults
 - **Service tier: Normal (default).** Fleets run the standard tier — the standing cost default (`~/.codex/config.toml` sets `service_tier = "default"`). The **Fast** (priority) lane is ~2x the cost; it is **opt-in per run via `--fast`** (or `"fast": true` in a fanout item). Only use `--fast` when the user explicitly asks for speed on a specific run; never make it the default.
-- **Reasoning effort: pick it by phase via `--role`.** Don't run everything at `xhigh` — that's the main driver of token *volume*. Pass the matching `--role` on every `spawn`/`fanout`/`run-session` so the right `-c model_reasoning_effort=…` is injected automatically. Spend reasoning where it compounds (plans/reviews), run cheap where the vetted plan already did the hard thinking (implementation/mechanical):
+- **Model tier + effort: picked by phase via `--role`.** Pass the matching `--role` on every `spawn`/`fanout`/`run-session`. For a Codex command it injects **both** the GPT-5.6 model tier (`-m …`) and the reasoning effort (`-c model_reasoning_effort=…`). Match the tier to task value (tier is the bigger cost lever) and spend reasoning where it compounds:
 
-  | Phase / `--role` | Effort | When |
-  |---|---|---|
-  | `plan-review`, `design-review`, `adversarial`, `security-review` | **xhigh** | designing/critiquing plans, adversarial & security passes — a bad plan compounds |
-  | `code-review`, `diff-review`, `review` | **high** | reviewing a diff or code for bugs |
-  | `build`, `implement` | **medium** | implementing from a vetted plan (deliberate floor — *not* low; avoids review churn) |
-  | `mechanical`, `scaffold` | **low** | rename / boilerplate / well-specified data transforms |
+  | Phase / `--role` | Model | Effort | When |
+  |---|---|---|---|
+  | `plan-review`, `design-review`, `adversarial`, `security-review`, `architect` | **gpt-5.6-sol** | **xhigh** | high-value judgment: designing/critiquing plans, adversarial & security passes |
+  | `code-review`, `diff-review`, `review`, `research` | **gpt-5.6-terra** | **high** | everyday strong reasoning: reviewing a diff/code for bugs |
+  | `build`, `implement` | **gpt-5.6-terra** | **medium** | implementing from a vetted plan (deliberate floor — *not* low) |
+  | `mechanical`, `scaffold` | **gpt-5.6-luna** | **low** | rename / boilerplate / well-specified transforms |
 
-  An explicit `-c model_reasoning_effort=…` in the command still wins over `--role`. Run `dcx roles` to print this map. Bump a specific run to `xhigh` only when the task genuinely needs maximum depth.
+  An explicit `-m …` or `-c model_reasoning_effort=…` in the command still wins over `--role`. Run `dcx roles` to print the map. GPT-5.6 also has `max` effort and an `ultra` sub-agent mode — reserve those for deliberate, expensive one-offs. (`gpt-5.5` is retired.)
 
-## Model lanes — Codex (GPT-5.5) + Claude (Sonnet 5 / Opus / Fable)
+## Model lanes — Codex (GPT-5.6 family) + Claude (Sonnet 5 / Opus / Fable)
 `--role` is **engine-aware** — the spawn command you pass decides the lane, and the role picks the right knob for it:
-- **Codex command** (`codex exec …`) → role injects the **reasoning effort** (`-c model_reasoning_effort=…`), exactly as before. GPT-5.5 is the default builder.
+- **Codex command** (`codex exec …`) → role injects a **GPT-5.6 tier** (`-m gpt-5.6-sol|terra|luna`) **and** the **reasoning effort** (`-c model_reasoning_effort=…`) — see the table above. `gpt-5.5` is retired.
 - **Claude command** (`claude -p …`) → role injects the **model** (`--model …`): `architect`/`plan-review`/`design-review`/`security-review`/`adversarial` → **Opus 4.8** (pin `--model claude-fable-5` yourself to ration Fable); `research`/`review`/`code-review`/`build`/… → **Sonnet 5**. An explicit `--model` in the command always wins — that's the Fable swap-in.
 
 The orchestra maps to lanes like this:
 - **architect / final review** → `claude -p … --role architect` (Opus 4.8 → Fable)
 - **research + first-pass review** → `claude -p … --role research` / `--role review` (Sonnet 5)
-- **build, in parallel** → `codex exec … --role build` (GPT-5.5)
+- **build, in parallel** → `codex exec … --role build` (GPT-5.6-terra @ medium)
 
 `dcx roles` prints both maps. Claude runs in `-p/--print` mode, so the pane **exits when done** and the FIFO completion signal fires just like Codex. Two things to confirm on your **first live pane run**:
 - **Write-capable Claude agents must not block on approval prompts** (that would stall the pane and only end on the `wait` timeout). Add an autonomous permission mode (e.g. `--permission-mode acceptEdits`) for build/fix agents; read-only `research`/`review` agents don't need it.

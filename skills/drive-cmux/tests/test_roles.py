@@ -1,6 +1,7 @@
 # tests/test_roles.py
 import pytest
-from dcx.roles import apply_role, apply_tier, effort_for, ROLE_EFFORT, RoleError
+from dcx.roles import (apply_role, apply_codex_model, apply_tier,
+                       effort_for, codex_model_for, ROLE_EFFORT, ROLE_CODEX_MODEL, RoleError)
 
 
 def test_effort_for_canonical_roles_match_the_policy():
@@ -45,6 +46,37 @@ def test_apply_role_explicit_effort_wins_over_preset():
 def test_apply_role_non_codex_command_raises():
     with pytest.raises(RoleError):
         apply_role("echo hello", "build")
+
+
+def test_codex_model_for_tiers_by_role():
+    assert codex_model_for("plan-review") == "gpt-5.6-sol"       # flagship for judgment
+    assert codex_model_for("security-review") == "gpt-5.6-sol"
+    assert codex_model_for("code-review") == "gpt-5.6-terra"     # all-rounder for reviews
+    assert codex_model_for("build") == "gpt-5.6-terra"
+    assert codex_model_for("mechanical") == "gpt-5.6-luna"       # cheap for well-specified work
+    # every effort role also has a model tier
+    assert set(ROLE_CODEX_MODEL) == set(ROLE_EFFORT)
+    # gpt-5.5 is retired — no role maps to it
+    assert all(m.startswith("gpt-5.6-") for m in ROLE_CODEX_MODEL.values())
+
+
+def test_apply_codex_model_injects_model_flag():
+    new, model, injected = apply_codex_model('codex exec -c sandbox_mode=read-only "$(cat /tmp/x.txt)"', "build")
+    assert injected is True and model == "gpt-5.6-terra"
+    assert new == 'codex exec -m gpt-5.6-terra -c sandbox_mode=read-only "$(cat /tmp/x.txt)"'
+
+
+def test_apply_codex_model_does_not_false_match_effort_flag():
+    # `-c model_reasoning_effort=` must NOT be read as an existing `-m`/`--model`
+    new, model, injected = apply_codex_model('codex exec -c model_reasoning_effort=xhigh "p"', "plan-review")
+    assert injected is True and model == "gpt-5.6-sol"
+    assert "-m gpt-5.6-sol" in new
+
+
+def test_apply_codex_model_explicit_model_wins():
+    for cmd in ('codex exec -m gpt-5.6-luna "p"', 'codex exec --model gpt-5.6-luna "p"'):
+        new, model, injected = apply_codex_model(cmd, "plan-review")   # preset says sol
+        assert injected is False and model == "gpt-5.6-luna" and new == cmd
 
 
 def test_apply_tier_normal_injects_nothing():

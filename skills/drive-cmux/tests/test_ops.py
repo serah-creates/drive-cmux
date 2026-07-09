@@ -125,7 +125,9 @@ def test_spawn_with_role_injects_reasoning_effort(tmp_path):
     c.tree_json = tree_after
     res = ops.spawn("/tmp/x", 'codex exec -c sandbox_mode=read-only "$(cat /tmp/p.txt)"', "review-1", role="plan-review")
     assert res["role"] == "plan-review" and res["reasoning_effort"] == "xhigh"
-    assert "-c model_reasoning_effort=xhigh" in c.last_command   # injected into the agent command
+    assert res["engine"] == "codex" and res["model"] == "gpt-5.6-sol"   # GPT-5.6 tier picked by role
+    assert "-c model_reasoning_effort=xhigh" in c.last_command   # effort injected
+    assert "-m gpt-5.6-sol" in c.last_command                    # model tier injected
     assert "echo done >" in c.last_command                       # still wrapped for the FIFO signal
 
 def test_spawn_without_role_omits_effort_keys(tmp_path):

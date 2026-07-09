@@ -29,7 +29,7 @@ drive-cmux is the little conductor's baton that makes that easy.
 A tiny command-line toolkit (`dcx`) that lets **Claude Code** drive the **cmux** app to:
 
 - 🎬 **spawn** a fleet of AI coding agents, each in its own pane,
-- 🎚️ give each one the **right model for the job** — GPT-5.5 for building, **Sonnet 5** for research, your best model (Opus 4.8 / **Fable 5**) as the architect,
+- 🎚️ give each one the **right model for the job** — GPT-5.6 for building, **Sonnet 5** for research, your best model (Opus 4.8 / **Fable 5**) as the architect,
 - 📨 get **pinged the moment each one finishes**, read its work, and
 - 🧹 clean up after itself.
 
@@ -72,7 +72,7 @@ Then, from any project, just tell Claude Code: *"use drive-cmux to…"* and star
 |---|---|---|
 | **Architect / Reviewer** | Opus 4.8 → **Fable 5** | Writes the plan, makes the final call. The expensive genius. |
 | **Researcher** | **Sonnet 5** | Reads, gathers, and checks facts. Sharp and cheaper. |
-| **Builder** | **GPT-5.5** (Codex) | The workhorse — turns the vetted plan into working code, in parallel. |
+| **Builder** | **GPT-5.6** (Codex) | The workhorse — turns the vetted plan into working code, in parallel. |
 
 The full picture — the plan → fan-out → review loop, how parallel agents stay out of each other's way (git worktrees), and how completion pings work — is in **[docs/how-it-works.md](docs/how-it-works.md)**.
 
@@ -110,7 +110,7 @@ drive-cmux/
 
 - **macOS** + the **cmux** app.
 - **Claude Code** (for the architect + research lanes).
-- **Codex CLI** (for the GPT-5.5 builder lane).
+- **Codex CLI** (for the GPT-5.6 builder lane).
 - **Python 3.10+**.
 
 (You can run just the GPT lane, or just the Claude lanes — but the magic is using them together.)

@@ -14,14 +14,13 @@ is the local prerequisites below (cmux + a socket password + Python). macOS + cm
 | Need | Check | Install |
 |------|-------|---------|
 | **cmux** desktop app | `ls /Applications/cmux.app` | Install cmux normally into `/Applications`. |
-| **Python 3.10+** | `python3 --version` | any modern `python3` |
-| **Codex CLI** *(only for Codex/GPT-5.5 fleets)* | `codex --version` | Install per your Codex setup, then create `~/.codex/config.toml` (see step 6). |
+| **Python 3.12** | `python3.12 --version` | `brew install python@3.12` |
+| **Codex CLI** *(only for Codex/GPT-5.6 fleets)* | `codex --version` | Install per your Codex setup, then create `~/.codex/config.toml` (see step 6). |
 
 ## 2. Get the skill onto the machine
 
 ```bash
-git clone https://github.com/serah-creates/drive-cmux.git
-cd drive-cmux && ./install.sh   # copies skills/drive-cmux into ~/.claude/skills/
+git clone https://github.com/MaierG74/drive-cmux.git ~/.claude/skills/drive-cmux
 ```
 
 Later, to pull updates (e.g. the wait-timeout fix) on any machine:
@@ -45,16 +44,16 @@ how cmux gave you the password:
 when prompted (hidden, never echoed). It runs `preflight` right after:
 
 ```bash
-python3 ~/.claude/skills/drive-cmux/dcx.py set-password
+python3.12 ~/.claude/skills/drive-cmux/dcx.py set-password
 # → {"ok": true, "preflight_ok": true}   ← fully set up
 ```
 
 **B — you'd rather set your own password:** let dcx generate a strong one, then paste it into cmux:
 
 ```bash
-python3 ~/.claude/skills/drive-cmux/dcx.py set-password --generate
+python3.12 ~/.claude/skills/drive-cmux/dcx.py set-password --generate
 # copy the printed "password" into cmux Settings → Socket Control Mode → Password, then:
-python3 ~/.claude/skills/drive-cmux/dcx.py preflight
+python3.12 ~/.claude/skills/drive-cmux/dcx.py preflight
 ```
 
 > Run `set-password` **in your terminal, not via Claude** — that keeps the password out of any chat
@@ -65,7 +64,7 @@ python3 ~/.claude/skills/drive-cmux/dcx.py preflight
 ## 5. Verify
 
 ```bash
-python3 ~/.claude/skills/drive-cmux/dcx.py preflight    # → {"ok": true}
+python3.12 ~/.claude/skills/drive-cmux/dcx.py preflight    # → {"ok": true}
 ```
 
 `{"ok": true}` means the socket is reachable and you're done. If it errors, see **Troubleshooting**.
@@ -75,10 +74,14 @@ python3 ~/.claude/skills/drive-cmux/dcx.py preflight    # → {"ok": true}
 The fleets run `codex exec`. To match the standing setup, create `~/.codex/config.toml`:
 
 ```toml
-model = "gpt-5.5"
+model = "gpt-5.6-sol"
 model_reasoning_effort = "xhigh"
 service_tier = "default"
 ```
+
+This is only the *global* default (and your interactive Codex model). The skill's `--role`
+presets inject a **per-role GPT-5.6 tier** — `sol` for plans/deep reviews, `terra` for reviews/builds,
+`luna` for mechanical work — so you don't need to pick a model per spawn (see `dcx roles` / SKILL.md).
 
 **Tier default = Normal.** The fleets run on the standard (`default`) service tier — which the
 `config.toml` above already sets, so **no per-command override is needed**. Add `-c service_tier=priority`
@@ -105,7 +108,7 @@ cp ~/.claude/skills/drive-cmux/config.example.json ~/.claude/skills/drive-cmux/c
 | `{"ok": false, "error_type": "CmuxError", ...}` mentioning the binary | cmux not at `/Applications/cmux.app/...`; set `cli_path` in a local `config.json`. |
 | Error opening the password file | File missing or at the wrong path — redo step 4 (or point `password_file` at it in `config.json`). |
 | Connects but rejects | Password in the file doesn't match cmux Settings → re-copy it (step 3–4). |
-| `python3: command not found` | any modern `python3`. |
+| `python3.12: command not found` | `brew install python@3.12`. |
 
 After fixing, re-run step 5.
 
@@ -114,8 +117,8 @@ After fixing, re-run step 5.
 ## Paste-into-Claude-Code setup prompt
 
 > Set up the **drive-cmux** skill on this machine. Read `~/.claude/skills/drive-cmux/SETUP.md` and walk
-> me through it: confirm cmux, `python3`, and (if I want the Codex fleets) the `codex` CLI are
+> me through it: confirm cmux, `python3.12`, and (if I want the Codex fleets) the `codex` CLI are
 > present; remind me to switch cmux to **Password mode**. For the password, **don't ask me to type it
-> to you** — tell me to run `python3 ~/.claude/skills/drive-cmux/dcx.py set-password` myself in my
+> to you** — tell me to run `python3.12 ~/.claude/skills/drive-cmux/dcx.py set-password` myself in my
 > terminal so it never lands in this transcript. Then run `dcx preflight` and confirm `{"ok": true}`.
 > Don't change any cmux Settings yourself — just guide me. Stop and show me the `preflight` output.

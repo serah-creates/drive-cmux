@@ -12,7 +12,7 @@ echo "✓ Installed the drive-cmux skill -> $DEST"
 
 if command -v python3 >/dev/null; then echo "✓ python3: $(python3 --version)"; else echo "✗ Please install Python 3 (3.10+)"; fi
 command -v claude >/dev/null && echo "✓ Claude Code found" || echo "• Install Claude Code (Sonnet 5 / Opus lanes): https://www.anthropic.com/claude-code"
-command -v codex  >/dev/null && echo "✓ Codex CLI found"   || echo "• Install the Codex CLI (GPT-5.5 lane)"
+command -v codex  >/dev/null && echo "✓ Codex CLI found"   || echo "• Install the Codex CLI (GPT-5.6 lane)"
 
 cat <<'NEXT'
 

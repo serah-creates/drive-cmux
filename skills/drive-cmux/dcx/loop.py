@@ -30,7 +30,7 @@ class Loop:
         result = {"task": task_slug, "workspace_ref": spawn["workspace_ref"],
                   "surface_ref": spawn["surface_ref"], "output": output,
                   "signaled": signaled, "timed_out": timed_out, "closed": closed}
-        for k in ("role", "reasoning_effort", "service_tier"):  # surface what was launched
+        for k in ("role", "engine", "model", "reasoning_effort", "service_tier"):  # surface what was launched
             if k in spawn:
                 result[k] = spawn[k]
         return result
